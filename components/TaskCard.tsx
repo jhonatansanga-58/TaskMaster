@@ -1,6 +1,7 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Text, IconButton } from "react-native-paper";
+import { TaskDetailModal } from "./TaskDetailModal";
 
 type Task = {
   id: number;
@@ -11,7 +12,14 @@ type Task = {
   status: "completed" | "pending" | "cancelled";
 };
 
-export const TaskCard = ({ task }: { task: Task }) => {
+type TaskCardProps = {
+  task: Task;
+  onDelete: (taskId: number) => void;
+};
+
+export const TaskCard = ({ task, onDelete }: TaskCardProps) => {
+  const [modalVisible, setModalVisible] = useState(false);
+
   const getStatusIcon = () => {
     switch (task.status) {
       case "completed":
@@ -39,34 +47,45 @@ export const TaskCard = ({ task }: { task: Task }) => {
   };
 
   return (
-    <Card style={styles.taskCard}>
-      <View style={styles.contentContainer}>
-        <View style={styles.mainContent}>
-          <View style={styles.textContent}>
-            <Text variant="titleMedium" style={styles.title}>
-              {task.title}
-            </Text>
-            <View style={styles.separator} />
-            <View style={styles.descriptionRow}>
-              <Text variant="bodyMedium" style={styles.description}>
-                {task.summary}
+    <>
+      <TouchableOpacity onPress={() => setModalVisible(true)}>
+        <Card style={styles.taskCard}>
+          <View style={styles.contentContainer}>
+            <View style={styles.mainContent}>
+              <View style={styles.textContent}>
+                <Text variant="titleMedium" style={styles.title}>
+                  {task.title}
+                </Text>
+                <View style={styles.separator} />
+                <View style={styles.descriptionRow}>
+                  <Text variant="bodyMedium" style={styles.description}>
+                    {task.summary}
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View style={styles.rightContent}>
+              <IconButton
+                icon={getStatusIcon()}
+                size={35}
+                iconColor={getStatusColor()}
+                style={styles.statusIcon}
+              />
+              <Text variant="labelSmall" style={styles.time}>
+                {task.time}
               </Text>
             </View>
           </View>
-        </View>
-        <View style={styles.rightContent}>
-          <IconButton
-            icon={getStatusIcon()}
-            size={32}
-            iconColor={getStatusColor()}
-            style={styles.statusIcon}
-          />
-          <Text variant="labelSmall" style={styles.time}>
-            {task.time}
-          </Text>
-        </View>
-      </View>
-    </Card>
+        </Card>
+      </TouchableOpacity>
+
+      <TaskDetailModal
+        visible={modalVisible}
+        task={task}
+        onDismiss={() => setModalVisible(false)}
+        onDelete={onDelete}
+      />
+    </>
   );
 };
 
