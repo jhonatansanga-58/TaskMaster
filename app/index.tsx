@@ -1,7 +1,7 @@
 import { TaskCard } from "@/components/TaskCard";
 import React, { useState } from "react";
 import { FlatList, View, StyleSheet } from "react-native";
-import { Appbar, FAB, Card, Text } from "react-native-paper";
+import { Appbar, FAB } from "react-native-paper";
 
 type Task = {
   id: number;
@@ -79,6 +79,12 @@ const HomeScreen = () => {
     },
   ]);
 
+  const handleDeleteTask = (taskId: number) => {
+    setTasks((currentTasks) =>
+      currentTasks.filter((task) => task.id !== taskId)
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
@@ -88,7 +94,9 @@ const HomeScreen = () => {
       <FlatList
         data={tasks}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <TaskCard task={item} />}
+        renderItem={({ item }) => (
+          <TaskCard task={item} onDelete={handleDeleteTask} />
+        )}
       />
 
       <FAB
