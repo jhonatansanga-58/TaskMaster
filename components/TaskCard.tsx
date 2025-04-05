@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Text, IconButton } from "react-native-paper";
 import { TaskDetailModal } from "./TaskDetailModal";
 import { Task } from "@/lib/api";
-import { getStatusIcon, getStatusColor } from "@/utils/taskUtils";
+import { getStatusIcon, getStatusColor, formatTime } from "@/utils/taskUtils";
 
 type TaskCardProps = {
   task: Task;
@@ -38,9 +38,15 @@ export const TaskCard = ({ task, onDelete }: TaskCardProps) => {
                 iconColor={getStatusColor(task.status)}
                 style={styles.statusIcon}
               />
-              <Text variant="labelSmall" style={styles.time}>
-                {task.time}
-              </Text>
+              <View style={styles.timeContainer}>
+                <IconButton
+                  icon="clock-outline"
+                  size={16}
+                  iconColor="#007AFF"
+                  style={styles.timeIcon}
+                />
+                <Text style={styles.timeText}>{formatTime(task.time)}</Text>
+              </View>
             </View>
           </View>
         </Card>
@@ -98,8 +104,14 @@ const styles = StyleSheet.create({
   statusIcon: {
     margin: 0,
   },
-  time: {
+  timeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  timeIcon: {
+    marginRight: 0,
+  },
+  timeText: {
     color: "#666666",
-    marginTop: 4,
   },
 });

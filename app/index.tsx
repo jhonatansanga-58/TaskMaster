@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, FlatList } from "react-native";
-import { Text, FAB, Appbar } from "react-native-paper";
+import { Text, FAB, Appbar, Portal } from "react-native-paper";
 import { TaskCard } from "@/components/TaskCard";
+import { CreateTaskModal } from "@/components/CreateTaskModal";
 import LoginForm from "@/components/LoginForm";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import { fetchTasks, Tasks } from "@/lib/api";
+//import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function HomeScreen() {
   const [tasks, setTasks] = useState<Tasks>([]);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     // Get initial session
@@ -78,10 +81,26 @@ export default function HomeScreen() {
         contentContainerStyle={styles.list}
       />
 
+      <Portal>
+        <CreateTaskModal
+          visible={showCreateModal}
+          onDismiss={() => setShowCreateModal(false)}
+          onTaskCreated={() => {
+            if (session?.user) {
+              fetchTasks(session.user.id).then((tasks) => {
+                setTasks(tasks);
+              });
+            }
+            setShowCreateModal(false);
+          }}
+          userId={session.user.id}
+        />
+      </Portal>
+
       <FAB
-        style={styles.fab}
         icon="plus"
-        onPress={() => console.log("Agregar tarea")}
+        style={styles.fab}
+        onPress={() => setShowCreateModal(true)}
       />
     </View>
   );
