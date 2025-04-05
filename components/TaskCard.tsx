@@ -8,9 +8,10 @@ import { getStatusIcon, getStatusColor, formatTime } from "@/utils/taskUtils";
 type TaskCardProps = {
   task: Task;
   onDelete: (taskId: number) => void;
+  onTaskUpdated: () => void;
 };
 
-export const TaskCard = ({ task, onDelete }: TaskCardProps) => {
+export const TaskCard = ({ task, onDelete, onTaskUpdated }: TaskCardProps) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   return (
@@ -57,6 +58,7 @@ export const TaskCard = ({ task, onDelete }: TaskCardProps) => {
         task={task}
         onDismiss={() => setModalVisible(false)}
         onDelete={onDelete}
+        onTaskUpdated={onTaskUpdated}
       />
     </>
   );

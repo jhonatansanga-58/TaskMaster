@@ -6,7 +6,8 @@ import { CreateTaskModal } from "@/components/CreateTaskModal";
 import LoginForm from "@/components/LoginForm";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
-import { fetchTasks, Tasks } from "@/lib/api";
+import { fetchTasks, Tasks, Task } from "@/lib/api";
+import { TaskDetailModal } from "@/components/TaskDetailModal";
 //import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function HomeScreen() {
@@ -14,18 +15,12 @@ export default function HomeScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showTaskDetail, setShowTaskDetail] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        console.log("session.user.id", session.user.id);
-        fetchTasks(session.user.id);
-      }
-      setLoading(false);
-    });
-
+    fetchData();
     // Listen for auth changes
     const {
       data: { subscription },
@@ -33,6 +28,7 @@ export default function HomeScreen() {
       setSession(session);
       if (session?.user) {
         fetchTasks(session?.user.id).then((tasks) => {
+          console.log("primero");
           setTasks(tasks);
         });
       }
@@ -40,6 +36,20 @@ export default function HomeScreen() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchData = async () => {
+    console.log("fetchData called in HomeScreen");
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        console.log("session.user.id", session.user.id);
+        fetchTasks(session.user.id).then((tasks) => {
+          setTasks(tasks || []);
+        });
+      }
+      setLoading(false);
+    });
+  };
 
   const handleDeleteTask = async (taskId: number) => {
     try {
@@ -76,7 +86,14 @@ export default function HomeScreen() {
         data={tasks}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <TaskCard task={item} onDelete={handleDeleteTask} />
+          <TaskCard
+            task={item}
+            onDelete={handleDeleteTask}
+            onTaskUpdated={() => {
+              console.log("onTaskUpdated taskcard called in HomeScreen");
+              fetchData();
+            }}
+          />
         )}
         contentContainerStyle={styles.list}
       />
@@ -86,14 +103,23 @@ export default function HomeScreen() {
           visible={showCreateModal}
           onDismiss={() => setShowCreateModal(false)}
           onTaskCreated={() => {
-            if (session?.user) {
-              fetchTasks(session.user.id).then((tasks) => {
-                setTasks(tasks);
-              });
-            }
+            fetchData();
             setShowCreateModal(false);
           }}
           userId={session.user.id}
+        />
+      </Portal>
+
+      <Portal>
+        <TaskDetailModal
+          visible={showTaskDetail && !!selectedTask}
+          task={selectedTask!}
+          onDismiss={() => {
+            setShowTaskDetail(false);
+            setSelectedTask(null);
+            //fetchData();
+          }}
+          onDelete={handleDeleteTask}
         />
       </Portal>
 
