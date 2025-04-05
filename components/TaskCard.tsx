@@ -67,7 +67,9 @@ export const TaskCard = ({ task, onDelete, onTaskUpdated }: TaskCardProps) => {
 const styles = StyleSheet.create({
   taskCard: {
     margin: 10,
-    padding: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
+    backgroundColor: "#FFF",
   },
   contentContainer: {
     flexDirection: "row",
