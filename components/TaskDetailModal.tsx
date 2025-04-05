@@ -2,15 +2,8 @@ import React, { useState } from "react";
 import { View, StyleSheet, Modal, TouchableOpacity } from "react-native";
 import { Text, Surface, IconButton, Button } from "react-native-paper";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
-
-type Task = {
-  id: number;
-  title: string;
-  summary: string;
-  description: string;
-  time: string;
-  status: "completed" | "pending" | "cancelled";
-};
+import { Task } from "@/lib/api";
+import { getStatusIcon, getStatusColor } from "@/utils/taskUtils";
 
 type TaskDetailModalProps = {
   visible: boolean;
@@ -26,32 +19,6 @@ export const TaskDetailModal = ({
   onDelete,
 }: TaskDetailModalProps) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-
-  const getStatusIcon = () => {
-    switch (task.status) {
-      case "completed":
-        return "check-circle";
-      case "pending":
-        return "clock";
-      case "cancelled":
-        return "close-circle";
-      default:
-        return "help-circle";
-    }
-  };
-
-  const getStatusColor = () => {
-    switch (task.status) {
-      case "completed":
-        return "#4CAF50";
-      case "pending":
-        return "#FFA000";
-      case "cancelled":
-        return "#F44336";
-      default:
-        return "#9E9E9E";
-    }
-  };
 
   const handleDelete = () => {
     setShowDeleteConfirmation(false);
@@ -98,9 +65,9 @@ export const TaskDetailModal = ({
                       {task.time}
                     </Text>
                     <IconButton
-                      icon={getStatusIcon()}
+                      icon={getStatusIcon(task.status)}
                       size={35}
-                      iconColor={getStatusColor()}
+                      iconColor={getStatusColor(task.status)}
                     />
                   </View>
 

@@ -5,83 +5,10 @@ import { TaskCard } from "@/components/TaskCard";
 import LoginForm from "@/components/LoginForm";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
-
-type Task = {
-  id: number;
-  title: string;
-  summary: string;
-  description: string;
-  time: string;
-  status: "completed" | "pending" | "cancelled";
-};
+import { fetchTasks, Tasks } from "@/lib/api";
 
 export default function HomeScreen() {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: 1,
-      title: "Limpiar el piso",
-      summary: "Cocina y sala",
-      description:
-        "Fregar la cocina para quitar la grasa acumulada. Limpiar las salpicaduras de refresco en la sala y pasar la aspiradora en todas las habitaciones.",
-      time: "10:00 AM",
-      status: "completed",
-    },
-    {
-      id: 2,
-      title: "Comprar víveres",
-      summary: "Comprar alimentos para la semana",
-      description:
-        "Comprar víveres esenciales como papa, zanahoria, leche, carne de res, pan integral, frutas como manzanas y bananas.",
-      time: "12:00 PM",
-      status: "completed",
-    },
-    {
-      id: 3,
-      title: "Hacer ejercicio",
-      summary: "Entrenamiento en gimnasio",
-      description:
-        "Hoy toca trabajar brazos y pecho. Hacer 4 series de press de banca, 3 series de bíceps con mancuernas y finalizar con estiramientos.",
-      time: "6:00 PM",
-      status: "cancelled",
-    },
-    {
-      id: 4,
-      title: "Estudiar inglés",
-      summary: "Preparar para el examen",
-      description:
-        "Revisar vocabulario nuevo del último módulo, hacer ejercicios de gramática sobre tiempos verbales y practicar listening con un podcast en inglés.",
-      time: "4:00 PM",
-      status: "pending",
-    },
-    {
-      id: 5,
-      title: "Tocar teclado",
-      summary: "Ensayo musical",
-      description:
-        "Practicar acordes mayores y menores, tocar una canción completa aprendida recientemente e improvisar melodías para desarrollar creatividad.",
-      time: "5:00 PM",
-      status: "pending",
-    },
-    {
-      id: 6,
-      title: "Organizar escritorio",
-      summary: "Ordenar el espacio de trabajo",
-      description:
-        "Clasificar documentos importantes y archivar, limpiar la superficie del escritorio y colocar materiales de oficina en sus respectivos lugares.",
-      time: "10:30 AM",
-      status: "pending",
-    },
-    {
-      id: 7,
-      title: "Leer un libro",
-      summary: "Avanzar con la lectura",
-      description:
-        "Seleccionar un capítulo del libro actual, tomar notas de las ideas principales y reflexionar sobre cómo aplicar lo aprendido.",
-      time: "8:00 PM",
-      status: "pending",
-    },
-  ]);
-
+  const [tasks, setTasks] = useState<Tasks>([]);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -89,6 +16,10 @@ export default function HomeScreen() {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session?.user) {
+        console.log("session.user.id", session.user.id);
+        fetchTasks(session.user.id);
+      }
       setLoading(false);
     });
 
@@ -97,13 +28,27 @@ export default function HomeScreen() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session?.user) {
+        fetchTasks(session?.user.id).then((tasks) => {
+          setTasks(tasks);
+        });
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleDeleteTask = (taskId: number) => {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+  const handleDeleteTask = async (taskId: number) => {
+    try {
+      const { error } = await supabase.from("task").delete().eq("id", taskId);
+
+      if (error) throw error;
+
+      // Update local state after successful deletion
+      setTasks((prevTasks) => prevTasks?.filter((task) => task.id !== taskId));
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   };
 
   if (loading) {

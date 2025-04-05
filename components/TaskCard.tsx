@@ -2,15 +2,8 @@ import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Text, IconButton } from "react-native-paper";
 import { TaskDetailModal } from "./TaskDetailModal";
-
-type Task = {
-  id: number;
-  title: string;
-  summary: string;
-  description: string;
-  time: string;
-  status: "completed" | "pending" | "cancelled";
-};
+import { Task } from "@/lib/api";
+import { getStatusIcon, getStatusColor } from "@/utils/taskUtils";
 
 type TaskCardProps = {
   task: Task;
@@ -19,32 +12,6 @@ type TaskCardProps = {
 
 export const TaskCard = ({ task, onDelete }: TaskCardProps) => {
   const [modalVisible, setModalVisible] = useState(false);
-
-  const getStatusIcon = () => {
-    switch (task.status) {
-      case "completed":
-        return "check-circle";
-      case "pending":
-        return "clock";
-      case "cancelled":
-        return "close-circle";
-      default:
-        return "help-circle";
-    }
-  };
-
-  const getStatusColor = () => {
-    switch (task.status) {
-      case "completed":
-        return "#4CAF50";
-      case "pending":
-        return "#FFA000";
-      case "cancelled":
-        return "#F44336";
-      default:
-        return "#9E9E9E";
-    }
-  };
 
   return (
     <>
@@ -66,9 +33,9 @@ export const TaskCard = ({ task, onDelete }: TaskCardProps) => {
             </View>
             <View style={styles.rightContent}>
               <IconButton
-                icon={getStatusIcon()}
+                icon={getStatusIcon(task.status)}
                 size={35}
-                iconColor={getStatusColor()}
+                iconColor={getStatusColor(task.status)}
                 style={styles.statusIcon}
               />
               <Text variant="labelSmall" style={styles.time}>

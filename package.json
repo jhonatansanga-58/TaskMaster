@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "gen:types": "npx supabase gen types typescript --project-id gmfmvjyanelvpklbxwpx > db_types.ts"
   },
   "jest": {
     "preset": "jest-expo"
@@ -54,6 +55,7 @@
     "jest": "^29.2.1",
     "jest-expo": "~52.0.6",
     "react-test-renderer": "18.3.1",
+    "supabase": "^2.20.5",
     "typescript": "^5.3.3"
   },
   "private": true
