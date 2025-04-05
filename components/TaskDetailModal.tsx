@@ -3,7 +3,7 @@ import { View, StyleSheet, Modal, TouchableOpacity } from "react-native";
 import { Text, Surface, IconButton, Button } from "react-native-paper";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 import { Task } from "@/lib/api";
-import { getStatusIcon, getStatusColor } from "@/utils/taskUtils";
+import { getStatusIcon, getStatusColor, formatTime } from "@/utils/taskUtils";
 
 type TaskDetailModalProps = {
   visible: boolean;
@@ -61,9 +61,17 @@ export const TaskDetailModal = ({
 
                   {/* Footer section */}
                   <View style={styles.footer}>
-                    <Text variant="titleMedium" style={styles.time}>
-                      {task.time}
-                    </Text>
+                    <View style={styles.timeContainer}>
+                      <IconButton
+                        icon="clock-outline"
+                        size={20}
+                        iconColor="#007AFF"
+                        style={styles.timeIcon}
+                      />
+                      <Text style={styles.timeText}>
+                        {formatTime(task.time)}
+                      </Text>
+                    </View>
                     <IconButton
                       icon={getStatusIcon(task.status)}
                       size={35}
@@ -143,11 +151,17 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 16,
   },
-  time: {
+  timeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  timeIcon: {
+    marginRight: 0,
+  },
+  timeText: {
     color: "#333",
     fontWeight: "600",
     fontSize: 19,
-    paddingLeft: 10,
   },
   deleteButton: {
     marginTop: 8,
