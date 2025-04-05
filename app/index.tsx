@@ -1,7 +1,10 @@
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, FlatList } from "react-native";
+import { Text, FAB, Appbar } from "react-native-paper";
 import { TaskCard } from "@/components/TaskCard";
-import React, { useState } from "react";
-import { FlatList, View, StyleSheet } from "react-native";
-import { Appbar, FAB } from "react-native-paper";
+import LoginForm from "@/components/LoginForm";
+import { supabase } from "@/lib/supabase";
+import { Session } from "@supabase/supabase-js";
 
 type Task = {
   id: number;
@@ -12,7 +15,7 @@ type Task = {
   status: "completed" | "pending" | "cancelled";
 };
 
-const HomeScreen = () => {
+export default function HomeScreen() {
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: 1,
@@ -79,11 +82,41 @@ const HomeScreen = () => {
     },
   ]);
 
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleDeleteTask = (taskId: number) => {
-    setTasks((currentTasks) =>
-      currentTasks.filter((task) => task.id !== taskId)
-    );
+    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
   };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!session) {
+    return <LoginForm />;
+  }
 
   return (
     <View style={styles.container}>
@@ -97,6 +130,7 @@ const HomeScreen = () => {
         renderItem={({ item }) => (
           <TaskCard task={item} onDelete={handleDeleteTask} />
         )}
+        contentContainerStyle={styles.list}
       />
 
       <FAB
@@ -106,12 +140,15 @@ const HomeScreen = () => {
       />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#E3F2FD",
+  },
+  list: {
+    padding: 5,
   },
   header: {
     backgroundColor: "#007AFF",
@@ -126,5 +163,3 @@ const styles = StyleSheet.create({
     backgroundColor: "#007AFF",
   },
 });
-
-export default HomeScreen;
