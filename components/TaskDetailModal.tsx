@@ -5,6 +5,7 @@ import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 import { EditTaskModal } from "./EditTaskModal";
 import { Task } from "@/lib/api";
 import { getStatusIcon, getStatusColor, formatTime } from "@/utils/taskUtils";
+import { supabase } from "@/lib/supabase";
 
 type TaskDetailModalProps = {
   visible: boolean;
@@ -94,24 +95,78 @@ export const TaskDetailModal = ({
 
                   {/* Action buttons */}
                   <View style={styles.actionButtons}>
-                    <Button
-                      mode="contained"
-                      onPress={() => setShowEditModal(true)}
-                      style={[styles.actionButton, styles.editButton]}
-                      buttonColor="#007AFF"
-                      icon="pencil"
-                    >
-                      Edit Task
-                    </Button>
-                    <Button
-                      mode="contained"
-                      onPress={() => setShowDeleteConfirmation(true)}
-                      style={[styles.actionButton, styles.deleteButton]}
-                      buttonColor="#FF5252"
-                      icon="delete"
-                    >
-                      Delete Task
-                    </Button>
+                    {task.status === 1 && (
+                      <>
+                        <Text style={styles.sectionLabel}>Mark as:</Text>
+                        <View style={styles.statusButtons}>
+                          <Button
+                            mode="contained"
+                            onPress={() => {
+                              supabase
+                                .from("task")
+                                .update({ status: 2 })
+                                .eq("id", task.id)
+                                .then(({ error }) => {
+                                  if (!error) {
+                                    onTaskUpdated?.();
+                                    onDismiss();
+                                  }
+                                });
+                            }}
+                            style={[styles.actionButton, styles.completeButton]}
+                            buttonColor="#4CAF50"
+                            icon="check-circle"
+                            labelStyle={styles.statusButtonLabel}
+                            contentStyle={styles.statusButtonContent}
+                          >
+                            Done
+                          </Button>
+                          <Button
+                            mode="contained"
+                            onPress={() => {
+                              supabase
+                                .from("task")
+                                .update({ status: 3 })
+                                .eq("id", task.id)
+                                .then(({ error }) => {
+                                  if (!error) {
+                                    onTaskUpdated?.();
+                                    onDismiss();
+                                  }
+                                });
+                            }}
+                            style={[styles.actionButton, styles.cancelButton]}
+                            buttonColor="#E53935"
+                            icon="close-circle"
+                            labelStyle={styles.statusButtonLabel}
+                            contentStyle={styles.statusButtonContent}
+                          >
+                            Cancelled
+                          </Button>
+                        </View>
+                        <View style={styles.separator} />
+                      </>
+                    )}
+                    <View style={styles.editButtons}>
+                      <Button
+                        mode="contained"
+                        onPress={() => setShowEditModal(true)}
+                        style={[styles.actionButton, styles.editButton]}
+                        buttonColor="#007AFF"
+                        icon="pencil"
+                      >
+                        Edit Task
+                      </Button>
+                      <Button
+                        mode="contained"
+                        onPress={() => setShowDeleteConfirmation(true)}
+                        style={[styles.actionButton, styles.deleteButton]}
+                        buttonColor="#D32F2F"
+                        icon="delete"
+                      >
+                        Delete Task
+                      </Button>
+                    </View>
                   </View>
                 </View>
               </View>
@@ -195,18 +250,55 @@ const styles = StyleSheet.create({
     fontSize: 19,
   },
   actionButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
+    marginTop: 10,
+    gap: 20,
   },
   actionButton: {
     flex: 1,
-    marginHorizontal: 4,
+    marginHorizontal: 0,
+    paddingVertical: 6,
+  },
+  statusButtons: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 0,
+  },
+  editButtons: {
+    flexDirection: "row",
+    gap: 8,
   },
   editButton: {
-    marginRight: 8,
+    flex: 1,
   },
   deleteButton: {
-    marginLeft: 8,
+    flex: 1,
+  },
+  completeButton: {
+    flex: 1,
+    backgroundColor: "#4CAF50",
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "#E53935",
+  },
+  sectionLabel: {
+    fontSize: 19,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: -2,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#ccc",
+    marginVertical: 10,
+  },
+  statusButtonLabel: {
+    fontSize: 18,
+    fontWeight: "500",
+  },
+  statusButtonContent: {
+    height: 48,
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
