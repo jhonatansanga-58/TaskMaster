@@ -11,10 +11,11 @@ export const fetchTasks = async (userId: string) => {
       console.error("Error fetching tasks:", error);
       return [];
     } else {
-      return data;
+      return data || [];
     }
   } catch (error) {
     console.error("Error fetching tasks:", error);
+    return [];
   }
 };
 

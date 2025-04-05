@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, StyleSheet, Modal, TouchableOpacity } from "react-native";
 import { Text, Surface, IconButton, Button } from "react-native-paper";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
+import { EditTaskModal } from "./EditTaskModal";
 import { Task } from "@/lib/api";
 import { getStatusIcon, getStatusColor, formatTime } from "@/utils/taskUtils";
 
@@ -10,6 +11,7 @@ type TaskDetailModalProps = {
   task: Task;
   onDismiss: () => void;
   onDelete?: (taskId: number) => void;
+  onTaskUpdated?: () => void;
 };
 
 export const TaskDetailModal = ({
@@ -17,14 +19,25 @@ export const TaskDetailModal = ({
   task,
   onDismiss,
   onDelete,
+  onTaskUpdated,
 }: TaskDetailModalProps) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleDelete = () => {
     setShowDeleteConfirmation(false);
     onDismiss();
     onDelete?.(task.id);
   };
+
+  const handleEdit = () => {
+    console.log("handleEdit called in TaskDetailModal");
+    onTaskUpdated?.();
+    setShowEditModal(false);
+    onDismiss();
+  };
+
+  if (!task) return null;
 
   return (
     <>
@@ -79,16 +92,27 @@ export const TaskDetailModal = ({
                     />
                   </View>
 
-                  {/* Delete button */}
-                  <Button
-                    mode="contained"
-                    onPress={() => setShowDeleteConfirmation(true)}
-                    style={styles.deleteButton}
-                    buttonColor="#FF5252"
-                    icon="delete"
-                  >
-                    Delete Task
-                  </Button>
+                  {/* Action buttons */}
+                  <View style={styles.actionButtons}>
+                    <Button
+                      mode="contained"
+                      onPress={() => setShowEditModal(true)}
+                      style={[styles.actionButton, styles.editButton]}
+                      buttonColor="#007AFF"
+                      icon="pencil"
+                    >
+                      Edit Task
+                    </Button>
+                    <Button
+                      mode="contained"
+                      onPress={() => setShowDeleteConfirmation(true)}
+                      style={[styles.actionButton, styles.deleteButton]}
+                      buttonColor="#FF5252"
+                      icon="delete"
+                    >
+                      Delete Task
+                    </Button>
+                  </View>
                 </View>
               </View>
             </TouchableOpacity>
@@ -100,6 +124,13 @@ export const TaskDetailModal = ({
         visible={showDeleteConfirmation}
         onDismiss={() => setShowDeleteConfirmation(false)}
         onConfirm={handleDelete}
+      />
+
+      <EditTaskModal
+        visible={showEditModal}
+        task={task}
+        onDismiss={() => setShowEditModal(false)}
+        onTaskUpdate={handleEdit}
       />
     </>
   );
@@ -163,7 +194,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 19,
   },
-  deleteButton: {
+  actionButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 8,
+  },
+  actionButton: {
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  editButton: {
+    marginRight: 8,
+  },
+  deleteButton: {
+    marginLeft: 8,
   },
 });
